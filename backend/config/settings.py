@@ -32,9 +32,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "graphene_django",
+    "graphene_django", #graphql
 
-    "organizations",
+    "organizations", #apps
+    "projects", #apps
 ]
 
 
