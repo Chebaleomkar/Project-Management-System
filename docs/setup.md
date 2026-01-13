@@ -132,7 +132,3 @@ mutation { deleteProject(id: "1") { success } }
 - [Building Projects App with GraphQL](./blog-projects-app.md)
 
 ---
-
-## License
-
-MIT
