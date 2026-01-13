@@ -3,15 +3,28 @@ from graphene_django import DjangoObjectType
 from organizations.models import Organization
 from projects.models import Project
 from tasks.models import Task
+from task_comments.models import TaskComment
 
 
 # ==================== TYPES ====================
 
+class TaskCommentType(DjangoObjectType):
+    """GraphQL type for TaskComment model."""
+    class Meta:
+        model = TaskComment
+        fields = ("id", "task", "content", "author_email", "created_at")
+
+
 class TaskType(DjangoObjectType):
     """GraphQL type for Task model."""
+    comments = graphene.List(lambda: TaskCommentType)
+    
     class Meta:
         model = Task
-        fields = ("id", "project", "title", "description", "status", "assignee_email", "due_date", "created_at")
+        fields = ("id", "project", "title", "description", "status", "assignee_email", "due_date", "created_at", "comments")
+
+    def resolve_comments(self, info):
+        return self.comments.all()
 
 
 class ProjectType(DjangoObjectType):
@@ -64,6 +77,9 @@ class Query(graphene.ObjectType):
     all_tasks = graphene.List(TaskType)
     tasks_by_project = graphene.List(TaskType, project_id=graphene.Int(required=True))
     task = graphene.Field(TaskType, id=graphene.Int(required=True))
+    
+    # Comment queries
+    comments_by_task = graphene.List(TaskCommentType, task_id=graphene.Int(required=True))
 
     def resolve_all_organizations(self, info):
         return Organization.objects.all()
@@ -94,6 +110,9 @@ class Query(graphene.ObjectType):
 
     def resolve_task(self, info, id):
         return Task.objects.filter(id=id).select_related('project').first()
+
+    def resolve_comments_by_task(self, info, task_id):
+        return TaskComment.objects.filter(task_id=task_id).select_related('task')
 
 
 # ==================== MUTATIONS ====================
@@ -314,6 +333,31 @@ class DeleteTask(graphene.Mutation):
             return DeleteTask(success=False, message="Task not found")
 
 
+# Comment Mutations
+class AddComment(graphene.Mutation):
+    class Arguments:
+        task_id = graphene.Int(required=True)
+        content = graphene.String(required=True)
+        author_email = graphene.String(required=True)
+
+    comment = graphene.Field(TaskCommentType)
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, task_id, content, author_email):
+        try:
+            task = Task.objects.get(pk=task_id)
+        except Task.DoesNotExist:
+            return AddComment(comment=None, success=False, message="Task not found")
+
+        comment = TaskComment.objects.create(
+            task=task,
+            content=content,
+            author_email=author_email
+        )
+        return AddComment(comment=comment, success=True, message="Comment added successfully")
+
+
 # ==================== MUTATION ROOT ====================
 
 class Mutation(graphene.ObjectType):
@@ -331,6 +375,9 @@ class Mutation(graphene.ObjectType):
     create_task = CreateTask.Field()
     update_task = UpdateTask.Field()
     delete_task = DeleteTask.Field()
+    
+    # Comment mutations
+    add_comment = AddComment.Field()
 
 
 # ==================== SCHEMA ====================

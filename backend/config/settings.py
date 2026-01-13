@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "organizations", #apps
     "projects", #apps
     "tasks", #apps
+    "task_comments", #apps
 ]
 
 
