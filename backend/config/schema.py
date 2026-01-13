@@ -2,15 +2,28 @@ import graphene
 from graphene_django import DjangoObjectType
 from organizations.models import Organization
 from projects.models import Project
+from tasks.models import Task
 
 
 # ==================== TYPES ====================
 
+class TaskType(DjangoObjectType):
+    """GraphQL type for Task model."""
+    class Meta:
+        model = Task
+        fields = ("id", "project", "title", "description", "status", "assignee_email", "due_date", "created_at")
+
+
 class ProjectType(DjangoObjectType):
     """GraphQL type for Project model."""
+    tasks = graphene.List(lambda: TaskType)
+    
     class Meta:
         model = Project
-        fields = ("id", "organization", "name", "description", "status", "due_date", "created_at")
+        fields = ("id", "organization", "name", "description", "status", "due_date", "created_at", "tasks")
+
+    def resolve_tasks(self, info):
+        return self.tasks.all()
 
 
 class OrganizationType(DjangoObjectType):
@@ -46,6 +59,11 @@ class Query(graphene.ObjectType):
         organization_slug=graphene.String(required=True)
     )
     project = graphene.Field(ProjectType, id=graphene.Int(required=True))
+    
+    # Task queries
+    all_tasks = graphene.List(TaskType)
+    tasks_by_project = graphene.List(TaskType, project_id=graphene.Int(required=True))
+    task = graphene.Field(TaskType, id=graphene.Int(required=True))
 
     def resolve_all_organizations(self, info):
         return Organization.objects.all()
@@ -67,6 +85,15 @@ class Query(graphene.ObjectType):
 
     def resolve_project(self, info, id):
         return Project.objects.filter(id=id).select_related('organization').first()
+
+    def resolve_all_tasks(self, info):
+        return Task.objects.select_related('project', 'project__organization').all()
+
+    def resolve_tasks_by_project(self, info, project_id):
+        return Task.objects.filter(project_id=project_id).select_related('project')
+
+    def resolve_task(self, info, id):
+        return Task.objects.filter(id=id).select_related('project').first()
 
 
 # ==================== MUTATIONS ====================
@@ -207,6 +234,86 @@ class DeleteProject(graphene.Mutation):
             return DeleteProject(success=False, message="Project not found")
 
 
+# Task Mutations
+class CreateTask(graphene.Mutation):
+    class Arguments:
+        project_id = graphene.Int(required=True)
+        title = graphene.String(required=True)
+        description = graphene.String()
+        status = graphene.String()
+        assignee_email = graphene.String()
+        due_date = graphene.DateTime()
+
+    task = graphene.Field(TaskType)
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, project_id, title, description="", status="TODO", assignee_email="", due_date=None):
+        try:
+            project = Project.objects.get(pk=project_id)
+        except Project.DoesNotExist:
+            return CreateTask(task=None, success=False, message="Project not found")
+
+        task = Task.objects.create(
+            project=project,
+            title=title,
+            description=description,
+            status=status,
+            assignee_email=assignee_email,
+            due_date=due_date
+        )
+        return CreateTask(task=task, success=True, message="Task created successfully")
+
+
+class UpdateTask(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        title = graphene.String()
+        description = graphene.String()
+        status = graphene.String()
+        assignee_email = graphene.String()
+        due_date = graphene.DateTime()
+
+    task = graphene.Field(TaskType)
+    success = graphene.Boolean()
+
+    def mutate(self, info, id, title=None, description=None, status=None, assignee_email=None, due_date=None):
+        try:
+            task = Task.objects.get(pk=id)
+        except Task.DoesNotExist:
+            return UpdateTask(task=None, success=False)
+
+        if title is not None:
+            task.title = title
+        if description is not None:
+            task.description = description
+        if status is not None:
+            task.status = status
+        if assignee_email is not None:
+            task.assignee_email = assignee_email
+        if due_date is not None:
+            task.due_date = due_date
+
+        task.save()
+        return UpdateTask(task=task, success=True)
+
+
+class DeleteTask(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    def mutate(self, info, id):
+        try:
+            task = Task.objects.get(pk=id)
+            task.delete()
+            return DeleteTask(success=True, message="Task deleted successfully")
+        except Task.DoesNotExist:
+            return DeleteTask(success=False, message="Task not found")
+
+
 # ==================== MUTATION ROOT ====================
 
 class Mutation(graphene.ObjectType):
@@ -219,6 +326,11 @@ class Mutation(graphene.ObjectType):
     create_project = CreateProject.Field()
     update_project = UpdateProject.Field()
     delete_project = DeleteProject.Field()
+    
+    # Task mutations
+    create_task = CreateTask.Field()
+    update_task = UpdateTask.Field()
+    delete_task = DeleteTask.Field()
 
 
 # ==================== SCHEMA ====================
