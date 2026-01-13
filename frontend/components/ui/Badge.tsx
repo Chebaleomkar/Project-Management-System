@@ -1,9 +1,10 @@
 interface BadgeProps {
     variant: "todo" | "in_progress" | "done" | "active" | "completed" | "on_hold" | "overdue";
     children: React.ReactNode;
+    className?: string;
 }
 
-export function Badge({ variant, children }: BadgeProps) {
+export function Badge({ variant, children, className = "" }: BadgeProps) {
     const variants = {
         todo: "bg-gray-600/50 text-gray-300 border-gray-500/30",
         in_progress: "bg-blue-600/30 text-blue-300 border-blue-500/30",
@@ -15,7 +16,7 @@ export function Badge({ variant, children }: BadgeProps) {
     };
 
     return (
-        <span className={`px-2 py-1 text-xs font-medium rounded-full border ${variants[variant]}`}>
+        <span className={`px-2 py-1 text-xs font-medium rounded-full border ${variants[variant]} ${className}`}>
             {children}
         </span>
     );
