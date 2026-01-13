@@ -18,12 +18,12 @@ export default function OrganizationDashboard({ params }: { params: Promise<{ sl
         setSlug(resolvedParams.slug);
     }, [resolvedParams]);
 
-    const { data: orgData, loading: orgLoading, error: orgError } = useQuery(GET_ORGANIZATION, {
+    const { data: orgData, loading: orgLoading, error: orgError } = useQuery<any>(GET_ORGANIZATION, {
         variables: { slug },
         skip: !slug,
     });
 
-    const { data: overdueData, loading: overdueLoading } = useQuery(GET_OVERDUE_TASKS, {
+    const { data: overdueData, loading: overdueLoading } = useQuery<any>(GET_OVERDUE_TASKS, {
         variables: { organizationSlug: slug },
         skip: !slug,
     });
@@ -108,18 +108,11 @@ export default function OrganizationDashboard({ params }: { params: Promise<{ sl
                     <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-2 gap-4">
                         <Link
-                            href={`/org/${slug}/projects/new`}
+                            href={`/org/${slug}/projects`}
                             className="p-4 bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 rounded-lg text-center transition-colors group"
                         >
                             <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">🚀</div>
                             <div className="font-medium text-indigo-300">New Project</div>
-                        </Link>
-                        <Link
-                            href={`/org/${slug}/tasks/new`}
-                            className="p-4 bg-green-600/10 border border-green-500/20 hover:bg-green-600/20 rounded-lg text-center transition-colors group"
-                        >
-                            <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">✨</div>
-                            <div className="font-medium text-green-300">New Task</div>
                         </Link>
                     </div>
                 </div>

@@ -91,6 +91,12 @@ export const GET_PROJECT = gql`
         createdAt
         commentCount
         isOverdue
+        comments {
+          id
+          content
+          authorEmail
+          createdAt
+        }
       }
     }
   }

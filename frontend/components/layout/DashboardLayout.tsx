@@ -15,7 +15,6 @@ export default function DashboardLayout({
     const links = [
         { href: `/org/${organizationSlug}`, label: "Overview", exact: true },
         { href: `/org/${organizationSlug}/projects`, label: "Projects" },
-        { href: `/org/${organizationSlug}/tasks`, label: "My Tasks" },
     ];
 
     return (
@@ -42,8 +41,8 @@ export default function DashboardLayout({
                                 key={link.href}
                                 href={link.href}
                                 className={`flex items-center px-4 py-3 rounded-lg transition-colors ${isActive
-                                        ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
-                                        : "text-slate-400 hover:bg-slate-700/50 hover:text-slate-200"
+                                    ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
+                                    : "text-slate-400 hover:bg-slate-700/50 hover:text-slate-200"
                                     }`}
                             >
                                 {link.label}

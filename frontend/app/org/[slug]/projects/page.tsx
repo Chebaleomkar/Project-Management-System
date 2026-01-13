@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { GET_PROJECTS_BY_ORGANIZATION, GET_PROJECTS_BY_ORGANIZATION as REFETCH_QUERY } from "@/lib/graphql/queries";
 import { CREATE_PROJECT } from "@/lib/graphql/mutations";
 import { use, useState, useEffect } from "react";
-import { LoadingPage, } from "@/components/ui/Loading";
+import { LoadingPage } from "@/components/ui/Loading";
 import { ErrorMessage, EmptyState } from "@/components/ui/Error";
 import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/Stats";
@@ -24,12 +24,12 @@ export default function ProjectsPage({ params }: { params: Promise<{ slug: strin
         setSlug(resolvedParams.slug);
     }, [resolvedParams]);
 
-    const { data, loading, error } = useQuery(GET_PROJECTS_BY_ORGANIZATION, {
+    const { data, loading, error } = useQuery<any>(GET_PROJECTS_BY_ORGANIZATION, {
         variables: { organizationSlug: slug },
         skip: !slug,
     });
 
-    const [createProject, { loading: createLoading }] = useMutation(CREATE_PROJECT, {
+    const [createProject, { loading: createLoading }] = useMutation<any>(CREATE_PROJECT, {
         onCompleted: (data) => {
             if (data.createProject.success) {
                 setIsCreating(false);

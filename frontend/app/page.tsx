@@ -8,7 +8,7 @@ import { ErrorMessage } from "@/components/ui/Error";
 import { Badge } from "@/components/ui/Badge";
 
 export default function HomePage() {
-  const { data, loading, error } = useQuery(GET_ALL_ORGANIZATIONS);
+  const { data, loading, error } = useQuery<any>(GET_ALL_ORGANIZATIONS);
 
   if (loading) return <LoadingPage />;
   if (error) return <ErrorMessage message={error.message} />;

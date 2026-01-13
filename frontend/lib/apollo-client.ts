@@ -8,9 +8,9 @@ const httpLink = new HttpLink({
     credentials: "include",
 });
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
+const errorLink = onError(({ graphQLErrors, networkError }: any) => {
     if (graphQLErrors) {
-        graphQLErrors.forEach(({ message, locations, path }) => {
+        graphQLErrors.forEach(({ message, locations, path }: any) => {
             console.error(
                 `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
             );

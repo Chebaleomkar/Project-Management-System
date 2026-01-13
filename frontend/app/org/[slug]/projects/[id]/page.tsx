@@ -18,7 +18,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ slug:
     const [projectId, setProjectId] = useState<number>(0);
 
     // UI State
-    const [selectedTask, setSelectedTask] = useState<any | null>(null);
+    const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
     // Create Task Form
@@ -35,10 +35,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ slug:
     }, [resolvedParams]);
 
     // Queries & Mutations
-    const { data, loading, error } = useQuery(GET_PROJECT, {
+    const { data, loading, error } = useQuery<any>(GET_PROJECT, {
         variables: { id: projectId, organizationSlug: slug },
         skip: !slug || !projectId,
-        pollInterval: 5000, // Light polling for "real-time" feel
     });
 
     const [createTask] = useMutation(CREATE_TASK, {
@@ -86,7 +85,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ slug:
         await addComment({
             variables: {
                 organizationSlug: slug,
-                taskId: parseInt(selectedTask.id),
+                taskId: parseInt(selectedTaskId!),
                 content: commentContent,
                 authorEmail: commentEmail,
             },
@@ -99,6 +98,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ slug:
 
     const project = data?.project;
     const tasks = project?.tasks || [];
+
+    const selectedTask = tasks.find((t: any) => t.id === selectedTaskId);
 
     // Group tasks by status
     const tasksByStatus = {
@@ -145,8 +146,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ slug:
                                 {tasksByStatus[status].map((task: any) => (
                                     <div
                                         key={task.id}
-                                        onClick={() => setSelectedTask(task)}
-                                        className={`bg-slate-800 p-4 rounded-lg border cursor-pointer transition-all hover:border-indigo-500/50 hover:shadow-lg group ${selectedTask?.id === task.id ? "border-indigo-500 ring-1 ring-indigo-500" : "border-slate-700"
+                                        onClick={() => setSelectedTaskId(task.id)}
+                                        className={`bg-slate-800 p-4 rounded-lg border cursor-pointer transition-all hover:border-indigo-500/50 hover:shadow-lg group ${selectedTaskId === task.id ? "border-indigo-500 ring-1 ring-indigo-500" : "border-slate-700"
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-2">
@@ -195,7 +196,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ slug:
                 <div className="fixed inset-y-0 right-0 w-96 bg-slate-800 border-l border-slate-700 shadow-2xl transform transition-transform duration-300 overflow-y-auto z-50 p-6">
                     <div className="flex justify-between items-start mb-6">
                         <h2 className="text-xl font-bold text-white truncate pr-4">{selectedTask.title}</h2>
-                        <button onClick={() => setSelectedTask(null)} className="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+                        <button onClick={() => setSelectedTaskId(null)} className="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
                     </div>
 
                     <div className="space-y-6">
