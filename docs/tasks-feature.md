@@ -1,7 +1,5 @@
 # Tasks Feature Documentation
 
-*January 13, 2026*
-
 ## Overview
 
 The Tasks feature allows creating and managing tasks within projects. Each task belongs to a project, has a status, and can be assigned to a team member via email.

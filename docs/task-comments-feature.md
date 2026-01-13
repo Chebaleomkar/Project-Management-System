@@ -1,7 +1,5 @@
 # Task Comments Feature Documentation
 
-*January 13, 2026*
-
 ## Overview
 
 The **Task Comments** feature adds lightweight discussion capability to tasks. Each comment is linked to a specific task, stores the comment text, the author’s email, and a timestamp.
